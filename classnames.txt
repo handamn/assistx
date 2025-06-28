@@ -1,0 +1,10 @@
+ApplyLipstick
+Archery
+BabyCrawling
+Basketball
+BenchPress
+Biking
+Bowling
+BoxingPunchingBag
+CliffDiving
+FrontCrawl
