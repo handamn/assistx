@@ -33,3 +33,28 @@ def compute_topk_accuracy(y_true, predictions, k=5):
     acc5_count = sum([true in pred['top5_pred'] for true, pred in zip(y_true, predictions)])
     acc5 = (acc5_count / len(y_true)) * 100
     return acc1, acc5
+
+def extract_multiple_frames(video_path, out_dir, positions=[0.1, 0.5, 0.9]):
+    os.makedirs(out_dir, exist_ok=True)
+    video_id = os.path.splitext(os.path.basename(video_path))[0]
+    out_paths = []
+
+    cap = cv2.VideoCapture(video_path)
+    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+    for i, p in enumerate(positions):
+        frame_idx = int(p * frame_count)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+        ret, frame = cap.read()
+        
+        frame_name = f"{video_id}_{i}.jpg" 
+        frame_path = os.path.join(out_dir, frame_name)
+
+        if ret:
+            cv2.imwrite(frame_path, frame)
+
+        out_paths.append(frame_path)
+
+    cap.release()
+    return out_paths
+
