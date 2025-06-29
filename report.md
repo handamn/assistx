@@ -1,92 +1,92 @@
 # 📘 Report: Zero-Shot Action Recognition on UCF101 using CLIP
 
 ## 1. Objective
-Membangun pipeline zero-shot untuk action recognition menggunakan model Vision-Language CLIP pada subset dataset UCF101, tanpa melakukan pelatihan ulang.
+To build a zero-shot pipeline for action recognition using Vision-Language CLIP model on a subset of the UCF101 dataset, without retraining.
 
 ## 2. Dataset
-- **UCF101**: Dataset video dengan 101 kategori aksi manusia.
-- **Subset**: Hanya digunakan 2 kelas untuk uji coba awal:
-  - ApplyLipstick (75 video)
-  - Archery (20 video)
-- Total: 95 video
+- **UCF101**: A video dataset with 101 categories of human actions.
+
+- **Subset**: Only 2 classes used for initial testing:
+- ApplyLipstick (75 videos)
+- Archery (20 videos)
+- Total: 95 videos
 
 ## 3. Model
-- **Model**: OpenAI CLIP `ViT-B/32` (pre-trained, tanpa fine-tuning)
+- **Model**: OpenAI CLIP `ViT-B/32` (pre-trained, no fine-tuning)
 - **Prompt**: `"a photo of a person doing {action}"`
-- **Strategi**: Bandingkan embedding frame tengah dengan embedding teks (cosine similarity)
+- **Strategy**: Compare middle frame embedding with text embedding (cosine similarity)
 
-## 4. Metodologi
-1. Ekstrak 1 frame dari tengah setiap video (menghemat waktu)
-2. Embedding teks (kelas aksi) dan embedding gambar (frame)
-3. Hitung kesamaan (cosine similarity)
-4. Ambil top-1 dan top-5 prediksi
+## 4. Methodology
+1. Extract 1 frame from the middle of each video (saves time)
+2. Text embedding (action class) and image embedding (frame)
+3. Compute similarity (cosine similarity)
+4. Take top-1 and top-5 predictions
 
-## 5. Hasil
+## 5. Results
 
-### 🎯 Akurasi Keseluruhan (dari 95 video):
+### 🎯 Overall Accuracy (from 95 videos):
 - ✅ **Top-1 Accuracy**: 100.0%
 - ✅ **Top-5 Accuracy**: 100.0%
 
-Semua video berhasil diklasifikasi dengan benar menggunakan hanya 1 frame per video dalam zero-shot setting!
+All videos are correctly classified using only 1 frame per video in zero-shot setting!
 
-## 6. Analisis Tambahan
-- **Kelas ApplyLipstick** sangat mudah dikenali oleh CLIP, bahkan dengan 1 frame.
-- **Nilai prediksi** (softmax scores) sangat tinggi untuk prediksi benar (0.95–1.00).
-- Beberapa kelas seperti Archery masih dikenali baik meskipun banyak kemiripan visual (pose statis + alat).
+## 6. Additional Analysis
+- **ApplyLipstick class** is very easy to recognize by CLIP, even with 1 frame.
+- **Prediction values** (softmax scores) are very high for correct predictions (0.95–1.00).
+- Some classes such as Archery are still well recognized despite many visual similarities (static poses + tools).
 
-## 7. Visualisasi dan Insight
-- Hasil menunjukkan kekuatan CLIP dalam memahami konteks visual + prompt natural.
-- Prompt seperti `"a person doing {action}"` bekerja efektif.
-- Semua prediksi top-1 berada di posisi indeks ke-0 pada `top5_pred`, membuktikan stabilitas model.
+## 7. Visualization and Insight
+- The results show the power of CLIP in understanding visual context + natural prompts.
+- Prompts such as `"a person doing {action}"` work effectively.
+- All top-1 predictions are at index position 0 in `top5_pred`, proving the stability of the model.
 
-## 8. Keterbatasan
-- Hanya 2 kelas diuji (belum merepresentasikan seluruh UCF101).
-- Satu frame bisa gagal jika gerakan dominan muncul di frame lain.
-- Tidak ada noise/background complex yang menguji ketangguhan model.
+## 8. Limitations
+- Only 2 classes were tested (not representative of the entire UCF101).
+- A single frame can fail if the dominant motion appears in another frame.
+- No noise/complex background to test the robustness of the model.
 
-## 9. Potensi Pengembangan
-- Uji coba dengan 10–20 kelas untuk validasi umum.
-- Perbandingan prompt (prompt engineering)
-- Kombinasi beberapa frame per video → voting/averaging
-- Fine-tuning linear probe atau prompt-tuning jika ingin few-shot learning
+## 9. Potential Development
+- Trial with 10–20 classes for general validation.
+- Prompt engineering
+- Combination of multiple frames per video → voting/averaging
+- Fine-tuning linear probe or prompt-tuning if few-shot learning is desired
 
-## 10. Kesimpulan
-Zero-shot action recognition menggunakan CLIP berhasil dilakukan dengan hasil **sangat akurat** pada subset dataset terbatas. Ini membuktikan efektivitas VLM seperti CLIP bahkan tanpa pelatihan ulang, dan membuka peluang untuk sistem klasifikasi ringan dan cepat.
+## 10. Conclusion
+Zero-shot action recognition using CLIP was successfully performed with **very accurate** results on a limited subset of the dataset. This proves the effectiveness of VLMs like CLIP even without retraining, and opens up opportunities for lightweight and fast classification systems.
 
-## 🔍 Visualisasi Embedding Space
+## 🔍 Embedding Space Visualization
 
-Gambar berikut menampilkan distribusi embedding hasil CLIP yang diproyeksikan ke 2 dimensi menggunakan t-SNE:
+The following figure shows the distribution of CLIP embeddings projected into 2 dimensions using t-SNE:
 
 ![Embedding t-SNE](results/tsne_plot.png)
 
-Terlihat bahwa embedding dari kelas ApplyLipstick dan Archery membentuk kluster yang terpisah, meskipun hanya menggunakan satu frame per video. Ini membuktikan bahwa CLIP memiliki representasi semantik yang cukup kuat untuk membedakan jenis aksi visual.
-
+It can be seen that the embeddings of the ApplyLipstick and Archery classes form separate clusters, even though they only use one frame per video. This proves that CLIP has a semantic representation that is strong enough to distinguish between types of visual actions.
 
 ---
 
-## 🔄 Perbandingan: Single Frame vs Multi-Frame
+## 🔄 Comparison: Single Frame vs Multi-Frame
 
-Untuk menguji pengaruh input temporal, kami membandingkan dua pendekatan:
-1. Menggunakan 1 frame tengah per video (default CLIP zero-shot)
-2. Menggunakan 3 frame (awal, tengah, akhir), lalu dirata-rata embedding-nya sebelum dibandingkan dengan teks.
+To test the influence of temporal input, we compare two approaches:
+1. Using 1 middle frame per video (default CLIP zero-shot)
+2. Using 3 frames (beginning, middle, end), then averaging the embeddings before comparing them to text.
 
-| Metode          | Top-1 Accuracy | Top-5 Accuracy |
+| Method | Top-1 Accuracy | Top-5 Accuracy |
 |-----------------|----------------|----------------|
-| Single Frame    | 100.00%        | 100.00%        |
-| Multi-Frame     | 100.00%        | 100.00%        |
+| Single Frame | 100.00% | 100.00% |
+| Multi-Frame | 100.00% | 100.00% |
 
-Meskipun kedua metode menghasilkan akurasi sempurna pada subset ini, pendekatan multi-frame memberikan **redundansi informasi temporal** dan lebih tahan terhadap frame yang noise atau tidak representatif. Ini menjadi landasan yang baik untuk ekspansi ke dataset lebih besar.
+While both methods achieve perfect accuracy on this subset, the multi-frame approach provides **temporal redundancy** and is more robust to noisy or unrepresentative frames. This provides a good foundation for expansion to larger datasets.
 
 ---
 
-## 📈 Visualisasi Embedding (t-SNE)
+## 📈 Embedding Visualization (t-SNE)
 
 ![Embedding t-SNE](results/tsne_plot.png)
 
-Visualisasi t-SNE menunjukkan bahwa embedding gambar dari dua kelas (ApplyLipstick dan Archery) membentuk dua kluster yang jelas terpisah. Ini menunjukkan bahwa CLIP tidak hanya memahami isi gambar, tapi juga bisa memisahkan aksi manusia berdasarkan deskripsi natural language.
+The t-SNE visualization shows that the image embeddings of the two classes (ApplyLipstick and Archery) form two clearly separated clusters. This shows that CLIP not only understands the content of the images, but can also separate human actions based on natural language descriptions.
 
 ---
 
-## 🏆 Kesimpulan Bonus
+## 🏆 Bonus Conclusion
 
-Eksperimen tambahan memperkuat klaim bahwa model CLIP sangat powerful bahkan dalam zero-shot dan setup minimal. Penambahan informasi temporal dan analisis embedding membuka peluang pengembangan sistem klasifikasi video yang efisien dan efektif — tanpa training tambahan.
+Additional experiments strengthen the claim that the CLIP model is very powerful even in zero-shot and minimal setup. The addition of temporal information and embedding analysis opens up the possibility of developing efficient and effective video classification systems — without additional training.
